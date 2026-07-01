@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loginom Quiz</title>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
+<style>
+:root,[data-theme="light"]{
+  --bg:#f0f4fa; --surface:#fff; --surface-2:#f7f9fd; --surface-off:#e8edf7;
+  --border:#cdd5e8; --divider:#dde3f0;
+  --text:#0f1d3a; --muted:#4a5878; --faint:#9aa5bf;
+  --navy:#1a3a6b; --navy-h:#162f58; --navy-a:#0f2040; --navy-hl:#e6ecf7;
+  --amber:#f5a800; --amber-h:#e09600; --amber-hl:#fff8e1;
+  --ok:#16a34a; --ok-hl:#dcfce7;
+  --err:#dc2626; --err-hl:#fee2e2;
+  --warn:#d97706; --warn-hl:#fef3c7;
+  --sh-sm:0 1px 3px rgba(10,25,60,.08);
+  --sh-md:0 4px 16px rgba(10,25,60,.12);
+  --sh-lg:0 12px 40px rgba(10,25,60,.18);
+  --r-sm:6px; --r-md:10px; --r-lg:16px; --r-xl:24px; --r-full:9999px;
+  --font:"Satoshi","Segoe UI",sans-serif;
+  --ease:180ms cubic-bezier(.16,1,.3,1);
+}
+[data-theme="dark"]{
+  --bg:#0c1628; --surface:#101e36; --surface-2:#162540; --surface-off:#1c2d4e;
+  --border:#243656; --divider:#1e2e4a;
+  --text:#dde5f5; --muted:#7a90b8; --faint:#3a4d70;
+  --navy:#5b82c8; --navy-h:#7099d8; --navy-a:#88b0e8; --navy-hl:#162040;
+  --amber:#f5a800; --amber-h:#ffc030; --amber-hl:#2a2000;
+  --ok:#4ade80; --ok-hl:#14532d; --err:#f87171; --err-hl:#7f1d1d;
+  --warn:#fbbf24; --warn-hl:#78350f;
+  --sh-sm:0 1px 3px rgba(0,0,0,.35); --sh-md:0 4px 16px rgba(0,0,0,.4); --sh-lg:0 12px 40px rgba(0,0,0,.5);
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme]){
+  --bg:#0c1628;--surface:#101e36;--surface-2:#162540;--surface-off:#1c2d4e;
+  --border:#243656;--divider:#1e2e4a;--text:#dde5f5;--muted:#7a90b8;--faint:#3a4d70;
+  --navy:#5b82c8;--navy-h:#7099d8;--navy-hl:#162040;--amber:#f5a800;--amber-h:#ffc030;--amber-hl:#2a2000;
+  --ok:#4ade80;--ok-hl:#14532d;--err:#f87171;--err-hl:#7f1d1d;--warn:#fbbf24;--warn-hl:#78350f;
+}}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
+body{font-family:var(--font);font-size:1rem;color:var(--text);background:var(--bg);min-height:100dvh}
+img,svg{display:block;max-width:100%}
+button,input,textarea,select{font:inherit;color:inherit}
+.app{display:flex;flex-direction:column;min-height:100dvh}
+
+/* HEADER */
+.header{position:sticky;top:0;z-index:100;
+  background:var(--navy);border-bottom:3px solid var(--amber);
+  padding:0 1rem;height:58px;display:flex;align-items:center;justify-content:space-between;
+  box-shadow:var(--sh-md)}
+.logo{display:flex;align-items:center;gap:.75rem;font-weight:700;font-size:1.05rem;color:#fff}
+.logo svg{width:32px;height:32px}
+[data-theme="dark"] .header{background:var(--surface);border-bottom-color:var(--amber)}
+.hdr-right{display:flex;align-items:center;gap:.5rem}
+.score-badge{display:flex;align-items:center;gap:.4rem;background:var(--amber);color:var(--navy);
+  border-radius:var(--r-full);padding:3px 12px;font-weight:700;font-size:.9rem}
+.theme-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
+  border-radius:var(--r-md);width:36px;height:36px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;color:#fff;transition:background var(--ease)}
+.theme-btn:hover{background:rgba(255,255,255,.28)}
+
+/* LAYOUT */
+.main{flex:1;padding:1.5rem 1rem 3rem}
+.wrap{max-width:640px;margin:0 auto}
+.screen{display:none}.screen.active{display:block}
+
+/* CARD */
+.card{background:var(--surface);border-radius:var(--r-xl);box-shadow:var(--sh-md);
+  padding:1.5rem;border:1px solid var(--border)}
+.card-top{border-top:4px solid var(--amber)}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:.5rem;border:none;border-radius:var(--r-md);
+  padding:.75rem 1.25rem;font-weight:600;cursor:pointer;
+  transition:all var(--ease);font-size:.9rem;white-space:nowrap}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important}
+.btn-navy{background:var(--navy);color:#fff}
+.btn-navy:hover:not(:disabled){background:var(--navy-h)}
+.btn-amber{background:var(--amber);color:var(--navy);font-weight:700}
+.btn-amber:hover:not(:disabled){background:var(--amber-h)}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text)}
+.btn-outline:hover:not(:disabled){background:var(--surface-off)}
+.btn-ghost{background:transparent;color:var(--muted);padding:.5rem .75rem}
+.btn-ghost:hover:not(:disabled){background:var(--surface-off);color:var(--text)}
+.btn-danger{background:#dc2626;color:#fff}
+.btn-danger:hover:not(:disabled){background:#b91c1c}
+.btn-sm{padding:.45rem .85rem;font-size:.82rem;border-radius:var(--r-sm)}
+.btn-lg{padding:1rem 1.5rem;font-size:1.05rem}
+.btn-block{width:100%;justify-content:center}
+
+/* INPUTS */
+.lbl{display:block;font-weight:600;font-size:.9rem;margin-bottom:.4rem;color:var(--text)}
+.inp{width:100%;border:1.5px solid var(--border);border-radius:var(--r-md);
+  padding:.75rem 1rem;font-size:1rem;background:var(--surface-2);color:var(--text);
+  transition:border-color var(--ease),box-shadow var(--ease)}
+.inp:focus{outline:none;border-color:var(--navy);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--navy) 15%,transparent)}
+textarea.inp{resize:vertical}
+.err-msg{color:var(--err);font-size:.88rem;margin-top:.3rem;display:none}
+
+/* ── JOIN ── */
+.join-hero{text-align:center;margin-bottom:1.5rem}
+.join-hero h1{font-size:clamp(1.6rem,4vw,2.2rem);font-weight:700;color:var(--navy);margin-bottom:.4rem}
+[data-theme="dark"] .join-hero h1{color:var(--navy-h)}
+.join-hero p{color:var(--muted)}
+.info-box{background:var(--amber-hl);border-radius:var(--r-lg);padding:1rem;
+  font-size:.88rem;border-left:4px solid var(--amber);margin-top:1.25rem}
+.info-box ul{padding-left:1.25rem;margin-top:.4rem}
+.info-box li{color:var(--muted);margin-bottom:3px}
+
+/* ── LOBBY ── */
+.lobby-header{text-align:center;margin-bottom:1.5rem}
+.lobby-header h2{font-size:1.4rem;font-weight:700;color:var(--navy);margin-bottom:.3rem}
+[data-theme="dark"] .lobby-header h2{color:var(--navy-h)}
+.lobby-header p{color:var(--muted);font-size:.9rem}
+.waiting-anim{display:flex;justify-content:center;gap:6px;margin:1rem 0}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--amber);
+  animation:dotpulse 1.2s ease-in-out infinite}
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes dotpulse{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+.participants-grid{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1rem;justify-content:center}
+.p-chip{display:flex;align-items:center;gap:.4rem;padding:5px 14px;
+  border-radius:var(--r-full);background:var(--surface-off);border:1px solid var(--border);
+  font-size:.88rem;font-weight:500;animation:chipIn .3s var(--ease)}
+.p-chip.me{background:var(--navy-hl);border-color:var(--navy);color:var(--navy)}
+[data-theme="dark"] .p-chip.me{color:var(--navy-h)}
+@keyframes chipIn{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+.lobby-count{text-align:center;margin-top:1rem;font-size:.85rem;color:var(--muted)}
+
+/* ── QUESTION ── */
+.q-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem}
+.q-num{font-size:.85rem;font-weight:700;color:var(--navy);
+  background:var(--navy-hl);padding:3px 12px;border-radius:var(--r-full);border:1px solid var(--navy)}
+[data-theme="dark"] .q-num{color:var(--navy-h);border-color:var(--navy)}
+.prog-wrap{height:7px;background:var(--surface-off);border-radius:var(--r-full);
+  margin-bottom:1.25rem;overflow:hidden}
+.prog-bar{height:100%;background:linear-gradient(90deg,var(--navy),var(--amber));
+  border-radius:var(--r-full);transition:width .4s ease}
+.q-text{font-size:1.1rem;font-weight:600;line-height:1.5;margin-bottom:1.25rem}
+.q-img-wrap{display:none;margin:0 auto 1.25rem;text-align:center;max-width:480px}
+.q-img-wrap img{display:inline-block;max-width:100%;max-height:260px;
+  border-radius:var(--r-lg);object-fit:contain;border:2px solid var(--border);
+  box-shadow:var(--sh-sm);background:var(--surface-2)}
+.ans-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+@media(max-width:480px){.ans-grid{grid-template-columns:1fr}}
+.ans-btn{display:flex;align-items:center;gap:.75rem;border:2px solid var(--border);
+  border-radius:var(--r-lg);padding:.75rem 1rem;background:var(--surface-2);
+  cursor:pointer;text-align:left;font-size:.95rem;font-weight:500;
+  transition:all var(--ease);width:100%}
+.ans-btn:hover:not(:disabled){border-color:var(--navy);background:var(--navy-hl);transform:translateY(-1px);box-shadow:var(--sh-sm)}
+.ans-btn.sel{border-color:var(--amber);background:var(--amber-hl);color:var(--navy)}
+.ans-btn.sel .letter{background:var(--amber);color:var(--navy)}
+.ans-btn.correct{border-color:var(--ok);background:var(--ok-hl);color:var(--ok)}
+.ans-btn.correct .letter{background:var(--ok);color:#fff}
+.ans-btn.wrong{border-color:var(--err);background:var(--err-hl);color:var(--err)}
+.ans-btn.wrong .letter{background:var(--err);color:#fff}
+.ans-btn:disabled{cursor:default;transform:none}
+.letter{background:var(--navy);color:#fff;width:28px;height:28px;min-width:28px;
+  border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:.85rem}
+.submit-wrap{margin-top:1rem;display:none}
+.submit-wrap .btn-amber{border-radius:var(--r-lg);font-size:1rem;padding:14px 0;
+  box-shadow:0 4px 12px rgba(245,168,0,.3)}
+.res-banner{display:flex;align-items:center;justify-content:center;
+  border-radius:var(--r-lg);padding:.75rem 1.25rem;font-weight:600;
+  margin-top:1rem;font-size:1rem;display:none;
+  animation:slideUp .3s var(--ease)}
+.res-banner.correct{background:var(--ok-hl);color:var(--ok)}
+.res-banner.wrong{background:var(--err-hl);color:var(--err)}
+.res-banner.timeout{background:var(--warn-hl);color:var(--warn)}
+@keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* TIMER */
+@property --pct{syntax:"<number>";initial-value:1;inherits:false}
+.timer-circle{width:52px;height:52px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:conic-gradient(var(--navy) calc(var(--pct)*360deg),var(--surface-off) 0);
+  transition:--pct .9s linear;box-shadow:inset 0 0 0 5px var(--surface)}
+.timer-circle.urgent{background:conic-gradient(var(--err) calc(var(--pct)*360deg),var(--surface-off) 0)}
+.timer-num{font-weight:700;font-size:1rem;color:var(--text)}
+
+/* ── FINAL ── */
+.final-hero{text-align:center;margin-bottom:1.5rem}
+.trophy{font-size:3.5rem;margin-bottom:.5rem}
+.final-hero h2{font-size:1.6rem;font-weight:700;margin-bottom:.3rem;color:var(--navy)}
+[data-theme="dark"] .final-hero h2{color:var(--navy-h)}
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:.75rem;margin-bottom:1.5rem}
+.pod-slot{display:flex;flex-direction:column;align-items:center;gap:4px}
+.pod-name{font-size:.8rem;font-weight:700;text-align:center;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pod-score{font-size:.75rem;color:var(--muted)}
+.pod-block{display:flex;align-items:center;justify-content:center;
+  border-radius:var(--r-sm) var(--r-sm) 0 0;font-size:1.5rem}
+.pod-1 .pod-block{width:80px;height:80px;background:linear-gradient(135deg,var(--amber),#ffc93c)}
+.pod-2 .pod-block{width:70px;height:60px;background:linear-gradient(135deg,#c8d4ec,#e8edf7)}
+.pod-3 .pod-block{width:70px;height:45px;background:linear-gradient(135deg,#e8c89c,#f5dbb8)}
+.lb{display:flex;flex-direction:column;gap:.5rem}
+.lb-row{display:flex;align-items:center;gap:.75rem;background:var(--surface-2);
+  border-radius:var(--r-md);padding:.75rem 1rem;border:1px solid var(--border)}
+.lb-row.me{background:var(--amber-hl);border-color:var(--amber)}
+.lb-rank{font-size:1.05rem;min-width:26px;text-align:center}
+.lb-name{flex:1;font-weight:600}
+.lb-score{font-weight:700;color:var(--navy)}
+[data-theme="dark"] .lb-score{color:var(--navy-h)}
+
+/* ── HOST ── */
+.host-hdr{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.75rem;margin-bottom:1.5rem}
+.host-hdr h2{font-size:1.25rem;font-weight:700;color:var(--navy)}
+[data-theme="dark"] .host-hdr h2{color:var(--navy-h)}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-bottom:1.25rem}
+@media(max-width:480px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
+.stat-card{background:var(--surface);border-radius:var(--r-lg);padding:1rem;
+  text-align:center;border:1px solid var(--border);border-top:3px solid var(--amber)}
+.stat-n{font-size:1.8rem;font-weight:700;color:var(--navy)}
+[data-theme="dark"] .stat-n{color:var(--navy-h)}
+.stat-l{font-size:.78rem;color:var(--muted);margin-top:2px}
+.q-list-host{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.25rem}
+.qi{display:flex;align-items:center;gap:.75rem;background:var(--surface);
+  border-radius:var(--r-md);padding:.75rem 1rem;border:1px solid var(--border)}
+.qi-n{background:var(--navy);color:#fff;width:26px;height:26px;min-width:26px;
+  border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:.8rem}
+.qi-t{flex:1;font-size:.9rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tag{border-radius:var(--r-full);padding:2px 10px;font-size:.75rem;font-weight:600}
+.tag-i{background:var(--navy-hl);color:var(--navy)}
+[data-theme="dark"] .tag-i{color:var(--navy-h)}
+
+/* HOST lobby participants list */
+.host-lobby-grid{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.75rem}
+
+/* START button big */
+.start-big{padding:1rem 2.5rem;font-size:1.1rem;border-radius:var(--r-xl);
+  box-shadow:0 6px 20px rgba(245,168,0,.4);animation:pulse-btn 2s ease-in-out infinite}
+@keyframes pulse-btn{0%,100%{box-shadow:0 6px 20px rgba(245,168,0,.4)}50%{box-shadow:0 6px 28px rgba(245,168,0,.65)}}
+
+/* OVERLAY EDITOR */
+.overlay{position:fixed;inset:0;background:rgba(10,25,60,.6);z-index:500;
+  display:none;align-items:flex-start;justify-content:center;padding:1rem;overflow-y:auto}
+.overlay-card{background:var(--surface);border-radius:var(--r-xl);
+  padding:1.5rem;width:100%;max-width:640px;box-shadow:var(--sh-lg);margin:auto;
+  border-top:4px solid var(--amber)}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- HEADER -->
+<header class="header">
+  <div class="logo">
+    <svg viewBox="0 0 34 34" fill="none" aria-label="Loginom Quiz">
+      <rect width="34" height="34" rx="7" fill="rgba(255,255,255,.15)"/>
+      <path d="M9 26L9 11Q9 8 12 8L17 8" stroke="#f5a800" stroke-width="3" stroke-linecap="round"/>
+      <path d="M17 8Q25 8 25 16Q25 24 17 24L12 24" stroke="#f5a800" stroke-width="3" stroke-linecap="round"/>
+      <path d="M12 24Q9 24 9 21" stroke="#f5a800" stroke-width="3" stroke-linecap="round"/>
+      <path d="M13 16L19 16" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+    <span>Loginom Quiz</span>
+  </div>
+  <div class="hdr-right">
+    <div id="scoreBadge" class="score-badge" style="display:none">
+      <i data-lucide="star" style="width:15px;height:15px"></i>
+      <span id="hdrScore">0</span> б.
+    </div>
+    <button class="theme-btn" data-theme-toggle aria-label="Тема">
+      <i data-lucide="sun" style="width:18px;height:18px"></i>
+    </button>
+  </div>
+</header>
+
+<main class="main">
+<div class="wrap">
+
+<!-- ① JOIN -->
+<div id="sJoin" class="screen active">
+  <div class="join-hero">
+    <h1>🎯 Loginom Quiz</h1>
+    <p>Введите имя и дождитесь старта от ведущего</p>
+  </div>
+  <div class="card card-top">
+    <div style="margin-bottom:1rem">
+      <label class="lbl" for="nameInp">Ваше имя</label>
+      <input class="inp" id="nameInp" type="text" placeholder="Иванова Мария" maxlength="40" autocomplete="name">
+      <div class="err-msg" id="nameErr">Введите имя</div>
+    </div>
+    <button class="btn btn-amber btn-block btn-lg" onclick="joinLobby()">
+      <i data-lucide="log-in" style="width:18px;height:18px"></i>
+      Войти в лобби
+    </button>
+    <div class="info-box">
+      <strong>Как это работает:</strong>
+      <ul>
+        <li>Введите имя и войдите в зал ожидания</li>
+        <li>Ведущий видит всех участников и запускает игру</li>
+        <li>На каждый вопрос — 20 секунд</li>
+        <li>🥇🥈🥉 Первые три по баллам — победители</li>
+      </ul>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:1.5rem">
+    <a href="#host" style="font-size:.85rem;color:var(--muted)">Вы ведущий? → Панель управления</a>
+  </div>
+</div>
+
+<!-- ② LOBBY (waiting room for participants) -->
+<div id="sLobby" class="screen">
+  <div class="card card-top">
+    <div class="lobby-header">
+      <h2>🏠 Зал ожидания</h2>
+      <p>Ждём, когда ведущий запустит игру…</p>
+      <div class="waiting-anim">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      </div>
+    </div>
+    <div style="background:var(--surface-off);border-radius:var(--r-lg);padding:1rem;">
+      <div style="font-size:.85rem;font-weight:700;color:var(--muted);margin-bottom:.5rem;">
+        УЧАСТНИКИ В ЛОББИ
+      </div>
+      <div class="participants-grid" id="lobbyGrid"></div>
+      <div class="lobby-count" id="lobbyCount"></div>
+    </div>
+    <div style="margin-top:1rem;font-size:.85rem;color:var(--muted);text-align:center">
+      Когда все соберутся, ведущий нажмёт «Начать игру»
+    </div>
+  </div>
+</div>
+
+<!-- ③ QUESTION -->
+<div id="sQuestion" class="screen">
+  <div class="card card-top">
+    <div class="q-header">
+      <span class="q-num" id="qNum">Вопрос 1 / 10</span>
+      <div style="display:flex;align-items:center">
+        <div class="timer-circle" id="timerCircle" style="--pct:1">
+          <span class="timer-num" id="timerNum">20</span>
+        </div>
+      </div>
+    </div>
+    <div class="prog-wrap"><div class="prog-bar" id="progBar" style="width:10%"></div></div>
+    <div class="q-text" id="qText"></div>
+    <div class="q-img-wrap" id="qImgWrap"><img id="qImg" src="" alt="Картинка к вопросу" loading="lazy"></div>
+    <div class="ans-grid" id="ansGrid"></div>
+    <div class="submit-wrap" id="submitWrap">
+      <button class="btn btn-amber btn-block" onclick="confirmSubmit()">
+        <i data-lucide="send" style="width:17px;height:17px"></i>Подтвердить ответ
+      </button>
+    </div>
+    <div class="res-banner" id="resBanner"></div>
+  </div>
+</div>
+
+<!-- ④ FINAL -->
+<div id="sFinal" class="screen">
+  <div class="card card-top">
+    <div class="final-hero">
+      <div class="trophy" id="trophyEmoji">🏆</div>
+      <h2 id="finalTitle">Викторина завершена!</h2>
+      <p id="finalSub" style="color:var(--muted)"></p>
+    </div>
+    <div class="podium" id="podium"></div>
+    <h3 style="font-size:.95rem;font-weight:700;margin-bottom:.75rem;color:var(--navy)">Все результаты</h3>
+    <div id="finalLb" class="lb"></div>
+    <div style="margin-top:1.5rem;display:flex;gap:.75rem;flex-wrap:wrap">
+      <button class="btn btn-outline" onclick="playAgain()">
+        <i data-lucide="rotate-ccw" style="width:15px;height:15px"></i>Пройти ещё раз
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ⑤ HOST (hash-based) -->
+<div id="sHost" class="screen">
+  <div class="host-hdr">
+    <div>
+      <h2>🎛️ Панель ведущего</h2>
+      <p style="font-size:.88rem;color:var(--muted)">Управление викториной</p>
+    </div>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+      <button class="btn btn-sm btn-ghost" onclick="openEditor()">
+        <i data-lucide="settings" style="width:14px;height:14px"></i>Вопросы
+      </button>
+      <button class="btn btn-sm btn-danger" onclick="fullReset()">
+        <i data-lucide="trash-2" style="width:14px;height:14px"></i>Сброс
+      </button>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-n" id="hParts">0</div><div class="stat-l">В лобби</div></div>
+    <div class="stat-card"><div class="stat-n" id="hFinished">0</div><div class="stat-l">Завершили</div></div>
+    <div class="stat-card"><div class="stat-n" id="hAvg">—</div><div class="stat-l">Ср. балл</div></div>
+    <div class="stat-card"><div class="stat-n" id="hQCount">0</div><div class="stat-l">Вопросов</div></div>
+  </div>
+
+  <!-- Lobby participants panel -->
+  <div id="hostLobbyPanel" class="card" style="margin-bottom:1.25rem;background:var(--surface-2)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem">
+      <div>
+        <div style="font-weight:700;font-size:.95rem">👥 Участники в лобби</div>
+        <div style="font-size:.82rem;color:var(--muted)" id="hostLobbyHint">Ждём участников…</div>
+      </div>
+      <button id="startBtn" class="btn btn-amber start-big" onclick="hostStartGame()" disabled>
+        <i data-lucide="play-circle" style="width:20px;height:20px"></i>
+        Начать игру
+      </button>
+    </div>
+    <div class="host-lobby-grid" id="hostLobbyGrid"></div>
+  </div>
+
+  <!-- During game controls -->
+  <div id="hostGamePanel" style="display:none;margin-bottom:1.25rem">
+    <div style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:center;background:var(--navy-hl);
+      border-radius:var(--r-lg);padding:1rem;border:1px solid var(--navy)">
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:.95rem;color:var(--navy)" id="hostGameStatus">Игра идёт…</div>
+        <div style="font-size:.82rem;color:var(--muted)" id="hostProgressHint"></div>
+      </div>
+      <button class="btn btn-danger btn-sm" onclick="hostFinishGame()">
+        <i data-lucide="flag" style="width:14px;height:14px"></i>Завершить игру
+      </button>
+    </div>
+  </div>
+
+  <h3 style="font-size:.92rem;font-weight:700;margin-bottom:.75rem;color:var(--navy)">Список вопросов</h3>
+  <div class="q-list-host" id="hostQList"></div>
+
+  <h3 style="font-size:.92rem;font-weight:700;margin-bottom:.75rem;margin-top:1.5rem;color:var(--navy)">Лидерборд</h3>
+  <div id="hostLb" class="lb"></div>
+</div>
+
+</div>
+</main>
+</div>
+
+<!-- EDITOR OVERLAY -->
+<div id="editorOverlay" class="overlay" onclick="closeEditorOutside(event)">
+  <div class="overlay-card" onclick="event.stopPropagation()">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+      <h3 style="margin:0;color:var(--navy)">✏️ Редактор вопросов</h3>
+      <button class="btn btn-sm btn-ghost" onclick="closeEditor()">✕</button>
+    </div>
+    <div id="editorList"></div>
+    <button class="btn btn-outline btn-block" onclick="addQuestion()" style="margin-top:1rem">
+      <i data-lucide="plus" style="width:15px;height:15px"></i>Добавить вопрос
+    </button>
+    <button class="btn btn-amber btn-block" onclick="saveQuestions()" style="margin-top:.75rem">
+      <i data-lucide="save" style="width:15px;height:15px"></i>Сохранить
+    </button>
+    <button class="btn btn-ghost btn-block" style="margin-top:.5rem" onclick="closeEditor()">Отмена</button>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<script>
+// ── Theme ────────────────────────────────────────────────────────
+(function(){
+  var b=document.querySelector('[data-theme-toggle]'),r=document.documentElement;
+  var d=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+  r.setAttribute('data-theme',d);
+  if(b) b.addEventListener('click',function(){
+    d=d==='dark'?'light':'dark';
+    r.setAttribute('data-theme',d);
+    b.innerHTML=d==='dark'
+      ?'<i data-lucide="sun" style="width:18px;height:18px"></i>'
+      :'<i data-lucide="moon" style="width:18px;height:18px"></i>';
+    lucide.createIcons();
+  });
+})();
+
+// ── Firebase (optional) ──────────────────────────────────────────
+var FB=false;
+try{
+  firebase.initializeApp({
+    apiKey:"AIzaSyDX3LwV0Zaj2ZzlUbzOSmKoBpFjzeHj_Wo",
+    authDomain:"loginom-trivia.firebaseapp.com",
+    databaseURL:"https://loginom-trivia-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId:"loginom-trivia",
+    storageBucket:"loginom-trivia.firebasestorage.app",
+    messagingSenderId:"999544713562",
+    appId:"1:999544713562:web:a723c1a5719247f3a18363"
+  });
+  FB=true;
+}catch(e){try{firebase.app();FB=true;}catch(e2){console.warn('Firebase unavailable',e2);}}
+function db(p){return firebase.database().ref(p);}
+
+// ── BroadcastChannel (cross-tab, same origin) ────────────────────
+var bc=(typeof BroadcastChannel!=='undefined')?new BroadcastChannel('lq_v2'):null;
+if(bc) bc.onmessage=function(e){handleMsg(e.data);};
+
+function broadcast(msg){
+  if(msg.type==='state') localStorage.setItem('lq_state',JSON.stringify(msg.payload));
+  if(msg.type==='participant'){
+    var p=getParticipants();p[msg.payload.id]=msg.payload;
+    localStorage.setItem('lq_participants',JSON.stringify(p));
+  }
+  if(bc) bc.postMessage(msg);
+  if(FB){
+    if(msg.type==='state') db('quiz/state').set(msg.payload);
+    if(msg.type==='participant') db('quiz/participants/'+msg.payload.id).set(msg.payload);
+  }
+}
+
+function handleMsg(msg){
+  if(!msg) return;
+  if(msg.type==='state') onRemoteState(msg.payload);
+  if(msg.type==='participant'){
+    var currentSession=getSessionId();
+    if(msg.payload.sessionId && currentSession && msg.payload.sessionId!==currentSession) return;
+    var p=getParticipants();p[msg.payload.id]=msg.payload;
+    localStorage.setItem('lq_participants',JSON.stringify(p));
+    if(isHost) refreshHostUI();
+    else if(gamePhase==='lobby') renderLobbyGrid();
+  }
+}
+
+// ── Game state// ── Game state ───────────────────────────────────────────────────
+var LETTERS=['А','Б','В','Г','Д','Е','Ж','З'];
+var TIMER=20;
+var isHost=false;
+var myId='',myName='',myScore=0;
+var currentQ=0,answered=false,selIdx=-1;
+var timerLeft=TIMER,timerInt=null;
+var gamePhase='idle'; // idle | lobby | playing | finished
+
+var DEFAULT_Q=[
+  {q:"Что такое Loginom?",img:"",opts:["ERP-система для бухгалтерии","Платформа для анализа данных и машинного обучения","Система управления проектами","Инструмент для создания сайтов"],correct:1},
+  {q:"Как называется визуальный элемент рабочего процесса в Loginom?",img:"",opts:["Блок","Нода","Компонент","Модуль"],correct:0},
+  {q:"Какой узел используется для объединения двух таблиц по ключевому полю?",img:"",opts:["Фильтр","Соединение","Агрегация","Транспонирование"],correct:1},
+  {q:"Что позволяет делать узел «Замена» в Loginom?",img:"",opts:["Удалять дубликаты","Подставлять значения по справочнику","Сортировать данные","Объединять столбцы"],correct:1},
+  {q:"Какой формат файла НЕ поддерживается Loginom как источник данных?",img:"",opts:["CSV","Excel (.xlsx)","PDF","JSON"],correct:2},
+  {q:"Что такое «Пакет» в Loginom?",img:"",opts:["Набор лицензий","Файл с сохранённым сценарием аналитики","Модуль машинного обучения","Вид визуализации данных"],correct:1},
+  {q:"Для чего используется узел «Скользящее окно» в Loginom?",img:"",opts:["Для группировки записей","Для расчёта показателей в динамике","Для фильтрации временного диапазона","Для объединения таблиц"],correct:1},
+  {q:"Какой метод машинного обучения встроен в Loginom для классификации?",img:"",opts:["Линейная регрессия","Нейронная сеть","Решающее дерево","Все перечисленные"],correct:3},
+  {q:"Что означает аббревиатура ETL в контексте Loginom?",img:"",opts:["Efficient Table Language","Extract, Transform, Load","Enterprise Tool for Loginom","Embedded Table Logic"],correct:1},
+  {q:"Как в Loginom называется режим запуска сценария без GUI?",img:"",opts:["Batch-режим","Server-режим","Script-режим","Daemon-режим"],correct:0}
+];
+var questions=JSON.parse(localStorage.getItem('lq_questions')||'null')||DEFAULT_Q.map(function(q){return Object.assign({},q);});
+
+// ── Screens ──────────────────────────────────────────────────────
+function show(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});document.getElementById(id).classList.add('active');}
+
+// ── INIT ─────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',function(){
+  lucide.createIcons();
+  if(location.hash==='#host'){
+    isHost=true;show('sHost');initHost();
+  } else {
+    // Participant: check if game already started
+    var st=getState();
+    if(st&&st.status==='playing'){
+      // Late join — skip lobby
+      // (we handle this after name entry)
+    }
+  }
+  document.getElementById('nameInp').addEventListener('keydown',function(e){if(e.key==='Enter')joinLobby();});
+  // Listen for Firebase state changes
+  if(FB&&!isHost){
+    db('quiz/state').on('value',function(snap){var v=snap.val();if(v) onRemoteState(v);});
+    db('quiz/questions').on('value',function(snap){var v=snap.val();if(v&&Array.isArray(v)) questions=v;});
+    db('quiz/participants').on('value',function(snap){
+      var v=snap.val();if(!v) return;
+      localStorage.setItem('lq_participants',JSON.stringify(v));
+      if(gamePhase==='lobby') renderLobbyGrid();
+    });
+  }
+  // Poll localStorage every 1.5s as fallback for cross-tab (when BroadcastChannel missed a message)
+  if(!isHost) setInterval(pollState,1500);
+});
+
+var _lastState=null;
+function pollState(){
+  var st=getState();
+  var key=st?JSON.stringify(st):null;
+  if(key===_lastState) return;
+  _lastState=key;
+  if(st) onRemoteState(st);
+  if(gamePhase==='lobby') renderLobbyGrid();
+}
+
+function onRemoteState(st){
+  if(!st) return;
+  localStorage.setItem('lq_state',JSON.stringify(st));
+  if(st.sessionId) setSessionId(st.sessionId);
+  if(st.status==='open' && myId){gamePhase='lobby';show('sLobby');renderLobbyGrid();return;}
+  if(st.status==='playing' && myId){loadQuestionsFromFirebase(function(){if(gamePhase!=='playing') startPlaying();});return;}
+  if(st.status==='finished' && (gamePhase==='playing' || gamePhase==='lobby')){showFinal();gamePhase='finished';}
+}
+
+// ── JOIN LOBBY// ── JOIN LOBBY ───────────────────────────────────────────────────
+window.joinLobby=function(){
+  var name=document.getElementById('nameInp').value.trim();
+  if(!name){var err=document.getElementById('nameErr');err.style.display='block';document.getElementById('nameInp').focus();return;}
+  document.getElementById('nameErr').style.display='none';
+  myName=name;
+  myId=name.replace(/\s+/g,'_')+'_'+Math.random().toString(36).slice(2,5);
+  var st=getState();
+  var sessionId=st&&st.sessionId?st.sessionId:getSessionId();
+  var pData={id:myId,name:myName,score:0,finished:false,joinedAt:Date.now(),sessionId:sessionId};
+  var p=getParticipants();p[myId]=pData;localStorage.setItem('lq_participants',JSON.stringify(p));
+  broadcast({type:'participant',payload:pData});
+  document.getElementById('scoreBadge').style.display='flex';
+  if(st&&st.status==='playing'){loadQuestionsFromFirebase(function(){gamePhase='playing';startPlaying();});return;}
+  gamePhase='lobby';show('sLobby');renderLobbyGrid();
+};
+
+
+
+function renderLobbyGrid(){
+  var parts=Object.values(getParticipants());
+  var grid=document.getElementById('lobbyGrid');
+  if(!grid) return;
+  grid.innerHTML=parts.map(function(p){
+    return '<div class="p-chip'+(p.id===myId?' me':'')+'">'
+      +(p.id===myId?'<i data-lucide="user" style="width:13px;height:13px"></i>':'')
+      +esc(p.name)+'</div>';
+  }).join('');
+  var cnt=document.getElementById('lobbyCount');
+  if(cnt) cnt.textContent=parts.length+' участник'+(parts.length===1?'':parts.length<5?'а':'ов')+' в лобби';
+  lucide.createIcons();
+}
+
+// ── HOST ─────────────────────────────────────────────────────────
+function initHost(){
+  document.getElementById('hQCount').textContent=questions.length;
+  renderHostQList();
+  loadQuestionsFromFirebase(function(){
+    renderHostQList();
+    document.getElementById('hQCount').textContent=questions.length;
+  });
+  if(FB){
+    db('quiz/questions').on('value',function(snap){
+      var v=snap.val();
+      if(v&&Array.isArray(v)&&v.length){questions=v;localStorage.setItem('lq_questions',JSON.stringify(v));renderHostQList();document.getElementById('hQCount').textContent=questions.length;}
+    });
+    db('quiz/participants').on('value',function(snap){
+      var v=snap.val()||{};
+      var currentSession=getSessionId();
+      var filtered={};
+      Object.keys(v).forEach(function(k){var item=v[k];if(!currentSession||!item.sessionId||item.sessionId===currentSession) filtered[k]=item;});
+      localStorage.setItem('lq_participants',JSON.stringify(filtered));
+      refreshHostUI();
+    });
+    db('quiz/state').on('value',function(snap){
+      var v=snap.val();if(v){localStorage.setItem('lq_state',JSON.stringify(v));if(v.sessionId) setSessionId(v.sessionId);updateHostGamePanel(v);}
+    });
+  }
+  setInterval(function(){refreshHostUI();var st=getState();if(st) updateHostGamePanel(st);},1500);
+  hostOpenLobby();
+}
+
+function hostOpenLobby(){
+  loadQuestionsFromFirebase(function(){
+    var sessionId='sess_'+Date.now();
+    setSessionId(sessionId);
+    clearSessionPlayers();
+    var state={status:'open',openedAt:Date.now(),sessionId:sessionId};
+    localStorage.setItem('lq_state',JSON.stringify(state));
+    localStorage.setItem('lq_questions',JSON.stringify(questions));
+    if(bc) bc.postMessage({type:'state',payload:state});
+    if(FB) db('quiz/state').set(state);
+    refreshHostUI();
+    showToast('Лобби открыто. Вопросы сохранены, участники сброшены.');
+  });
+}
+
+function refreshHostUI(){
+  var parts=Object.values(getParticipants());
+  var currentSession=getSessionId();
+  parts=parts.filter(function(p){return !currentSession||!p.sessionId||p.sessionId===currentSession;});
+  var finished=parts.filter(function(p){return p.finished;});
+  document.getElementById('hParts').textContent=parts.length;
+  document.getElementById('hFinished').textContent=finished.length;
+  document.getElementById('hAvg').textContent=parts.length>0?(parts.reduce(function(s,p){return s+(p.score||0);},0)/parts.length).toFixed(1):'—';
+  var grid=document.getElementById('hostLobbyGrid');
+  if(grid){
+    grid.innerHTML=parts.map(function(p){var cls=p.finished?' me':'';return '<div class="p-chip'+cls+'">'+esc(p.name)+(p.finished?' ✓':'')+' <span style="color:var(--navy);font-weight:700">'+(p.score||0)+'б</span></div>';}).join('');
+  }
+  var btn=document.getElementById('startBtn');
+  if(btn){
+    btn.disabled=parts.length<1;
+    var hint=document.getElementById('hostLobbyHint');
+    if(hint) hint.textContent=parts.length>0?parts.length+' чел. готовы — нажмите «Начать игру»':'Ждём участников…';
+  }
+  var mapObj={};parts.forEach(function(p){mapObj[p.id]=p;});renderHostLb(mapObj);lucide.createIcons();
+}
+
+function updateHostGamePanel(st){
+  var lp=document.getElementById('hostLobbyPanel');
+  var gp=document.getElementById('hostGamePanel');
+  if(!lp||!gp) return;
+  if(st.status==='playing'){
+    lp.style.display='none';gp.style.display='block';
+    var parts=Object.values(getParticipants()).filter(function(p){return !st.sessionId||!p.sessionId||p.sessionId===st.sessionId;});
+    var fin=parts.filter(function(p){return p.finished;}).length;
+    document.getElementById('hostProgressHint').textContent=fin+' из '+parts.length+' завершили';
+  } else if(st.status==='open'||st.status==='finished'){
+    lp.style.display='';gp.style.display='none';
+    var btn=document.getElementById('startBtn');
+    if(btn){btn.disabled=Object.values(getParticipants()).length<1;btn.innerHTML='<i data-lucide="play-circle" style="width:20px;height:20px"></i>Начать игру';}
+    lucide.createIcons();
+  }
+}
+
+window.hostStartGame=function(){
+  loadQuestionsFromFirebase(function(){
+    var sessionId=getSessionId()||('sess_'+Date.now());
+    setSessionId(sessionId);
+    var state={status:'playing',startedAt:Date.now(),sessionId:sessionId};
+    localStorage.setItem('lq_state',JSON.stringify(state));
+    localStorage.setItem('lq_questions',JSON.stringify(questions));
+    if(bc) bc.postMessage({type:'state',payload:state});
+    if(FB){db('quiz/questions').set(questions);db('quiz/state').set(state);}
+    var btn=document.getElementById('startBtn');if(btn){btn.disabled=true;btn.textContent='▶ Игра запущена!';}
+    updateHostGamePanel(state);showToast('🚀 Игра началась! Участники видят первый вопрос.');
+  });
+};
+
+window.hostFinishGame=function(){
+  if(!confirm('Принудительно завершить игру?')) return;
+  var sessionId=getSessionId();
+  var state={status:'finished',finishedAt:Date.now(),sessionId:sessionId};
+  localStorage.setItem('lq_state',JSON.stringify(state));
+  if(bc) bc.postMessage({type:'state',payload:state});
+  if(FB) db('quiz/state').set(state);
+  updateHostGamePanel(state);showToast('Игра завершена. Вопросы сохранены.');
+};
+
+function renderHostQList(){function renderHostQList(){
+  var el=document.getElementById('hostQList');if(!el) return;
+  el.innerHTML=questions.map(function(q,i){
+    return '<div class="qi"><div class="qi-n">'+(i+1)+'</div><div class="qi-t">'+esc(q.q)
+      +(q.img?'<small style="opacity:.5;color:var(--amber)"> [🖼]</small>':'')
+      +'</div><span class="tag tag-i">'+q.opts.length+'</span></div>';
+  }).join('');
+}
+
+function renderHostLb(partsObj){
+  var el=document.getElementById('hostLb');if(!el) return;
+  var arr=Object.values(partsObj).sort(function(a,b){return (b.score||0)-(a.score||0);});
+  el.innerHTML=arr.map(function(p,i){
+    return '<div class="lb-row"><div class="lb-rank">'+(i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1)
+      +'</div><div class="lb-name">'+esc(p.name)+(p.finished?' ✓':'')+'</div>'
+      +'<div class="lb-score">'+(p.score||0)+' б.</div></div>';
+  }).join('')||'<p style="color:var(--muted);text-align:center;padding:1rem">Нет данных</p>';
+}
+
+// ── PLAYING ──────────────────────────────────────────────────────
+function startPlaying(){
+  gamePhase='playing';myScore=0;currentQ=0;answered=false;selIdx=-1;
+  document.getElementById('hdrScore').textContent=0;
+  showQuestion(0);
+}
+
+function showQuestion(idx){
+  clearTimer();answered=false;selIdx=-1;
+  var q=questions[idx];
+  show('sQuestion');
+  document.getElementById('qNum').textContent='Вопрос '+(idx+1)+' / '+questions.length;
+  document.getElementById('progBar').style.width=(((idx+1)/questions.length)*100)+'%';
+  document.getElementById('qText').textContent=q.q;
+  document.getElementById('resBanner').style.display='none';
+  document.getElementById('submitWrap').style.display='none';
+
+  var iw=document.getElementById('qImgWrap'),im=document.getElementById('qImg');
+  if(q.img&&q.img.trim()){im.src=q.img.trim();iw.style.display='block';}
+  else{iw.style.display='none';im.src='';}
+
+  var grid=document.getElementById('ansGrid');grid.innerHTML='';
+  q.opts.forEach(function(opt,i){
+    var b=document.createElement('button');
+    b.className='ans-btn';
+    b.innerHTML='<span class="letter">'+LETTERS[i]+'</span><span>'+esc(opt)+'</span>';
+    b.onclick=(function(ii){return function(){selectAns(ii);};})(i);
+    grid.appendChild(b);
+  });
+
+  timerLeft=TIMER;renderTimer();
+  timerInt=setInterval(function(){
+    timerLeft--;renderTimer();
+    if(timerLeft<=0){
+      clearTimer();
+      if(!answered){
+        disableAnswerBtns();
+        showBanner('timeout','⏰ Время вышло!');
+        document.getElementById('submitWrap').style.display='none';
+        setTimeout(nextQ,1800);
+      }
+    }
+  },1000);
+  lucide.createIcons();
+}
+
+function selectAns(i){
+  if(answered||timerLeft<=0) return;
+  selIdx=i;
+  document.querySelectorAll('.ans-btn').forEach(function(b,j){b.classList.toggle('sel',j===i);});
+  document.getElementById('submitWrap').style.display='block';
+}
+
+window.confirmSubmit=function(){
+  if(selIdx===-1||answered) return;
+  document.getElementById('submitWrap').style.display='none';
+  submitAns(selIdx);
+};
+
+function submitAns(optIdx){
+  if(answered) return;
+  answered=true;clearTimer();disableAnswerBtns();
+  var q=questions[currentQ];
+  var ok=optIdx===q.correct;
+  var btns=document.querySelectorAll('.ans-btn');
+  btns[q.correct].classList.add('correct');
+  if(!ok) btns[optIdx].classList.add('wrong');
+  if(ok){myScore++;document.getElementById('hdrScore').textContent=myScore;showBanner('correct','✅ Верно! +1 балл');}
+  else showBanner('wrong','❌ Неверно. Правильный: '+LETTERS[q.correct]);
+
+  // Sync score
+  var p=getParticipants();
+  if(p[myId]){p[myId].score=myScore;localStorage.setItem('lq_participants',JSON.stringify(p));}
+  broadcast({type:'participant',payload:{id:myId,name:myName,score:myScore,finished:false,joinedAt:(p[myId]||{}).joinedAt||Date.now()}});
+  if(FB) db('quiz/participants/'+myId+'/score').set(myScore);
+
+  setTimeout(nextQ,1800);
+}
+
+function nextQ(){
+  if(currentQ+1<questions.length){currentQ++;showQuestion(currentQ);}
+  else finishQuiz();
+}
+
+function finishQuiz(){
+  clearTimer();gamePhase='finished';
+  var parts=getParticipants();
+  if(parts[myId]){parts[myId].score=myScore;parts[myId].finished=true;localStorage.setItem('lq_participants',JSON.stringify(parts));}
+  broadcast({type:'participant',payload:{id:myId,name:myName,score:myScore,finished:true,joinedAt:(parts[myId]||{}).joinedAt||Date.now()}});
+  if(FB) db('quiz/participants/'+myId).update({score:myScore,finished:true});
+  showFinal();
+}
+
+function disableAnswerBtns(){document.querySelectorAll('.ans-btn').forEach(function(b){b.disabled=true;});}
+function showBanner(type,msg){var el=document.getElementById('resBanner');el.style.display='flex';el.className='res-banner '+type;el.textContent=msg;}
+
+// ── TIMER ────────────────────────────────────────────────────────
+function renderTimer(){
+  var c=document.getElementById('timerCircle'),n=document.getElementById('timerNum');
+  if(!c||!n) return;
+  c.style.setProperty('--pct',timerLeft/TIMER);
+  n.textContent=timerLeft;
+  c.classList.toggle('urgent',timerLeft<=5);
+}
+function clearTimer(){clearInterval(timerInt);timerInt=null;}
+
+// ── FINAL ────────────────────────────────────────────────────────
+function showFinal(){
+  show('sFinal');
+  confetti({particleCount:120,spread:80,origin:{y:0.5},colors:['#1a3a6b','#f5a800','#ffffff']});
+  var parts=getParticipants();
+  if(FB){
+    db('quiz/participants').get().then(function(snap){renderFinal(snap.val()||parts);}).catch(function(){renderFinal(parts);});
+  } else renderFinal(parts);
+}
+
+function renderFinal(partsObj){
+  var sorted=Object.values(partsObj).sort(function(a,b){return (b.score||0)-(a.score||0);});
+  var myRank=sorted.findIndex(function(p){return p.id===myId;})+1;
+  var medals=['','🥇 1-е место!','🥈 2-е место!','🥉 3-е место!'];
+  document.getElementById('trophyEmoji').textContent=myRank===1?'🏆':myRank===2?'🥈':myRank===3?'🥉':'🎓';
+  document.getElementById('finalTitle').textContent=myRank>0&&myRank<=3?medals[myRank]:'Викторина завершена!';
+  document.getElementById('finalSub').textContent='Вы набрали '+myScore+' из '+questions.length+' баллов'+(myRank>0?' · место '+myRank+' из '+sorted.length:'');
+  if(myRank<=3&&myRank>0) confetti({particleCount:200,spread:120,origin:{y:0.4},colors:['#1a3a6b','#f5a800','#ffffff']});
+
+  var po=[sorted[1],sorted[0],sorted[2]];
+  var cls=['pod-2','pod-1','pod-3'],em=['🥈','🥇','🥉'];
+  document.getElementById('podium').innerHTML=po.map(function(p,i){
+    return p?'<div class="pod-slot '+cls[i]+'"><div class="pod-name">'+esc(p.name)+'</div><div class="pod-score">'+(p.score||0)+' б.</div><div class="pod-block">'+em[i]+'</div></div>':'';
+  }).join('');
+
+  document.getElementById('finalLb').innerHTML=sorted.map(function(p,i){
+    return '<div class="lb-row'+(p.id===myId?' me':'')+'"><div class="lb-rank">'
+      +(i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1)+'</div><div class="lb-name">'
+      +esc(p.name)+(p.id===myId?' (вы)':'')+'</div><div class="lb-score">'+(p.score||0)+' б.</div></div>';
+  }).join('');
+}
+
+window.playAgain=function(){
+  myScore=0;currentQ=0;gamePhase='lobby';
+  document.getElementById('hdrScore').textContent=0;
+  show('sLobby');renderLobbyGrid();
+};
+
+// ── RESET ────────────────────────────────────────────────────────
+window.fullReset=function(){
+  if(!confirm('Полностью сбросить игру и всех участников?')) return;
+  clearTimer();
+  localStorage.removeItem('lq_participants');
+  localStorage.removeItem('lq_state');
+  var state={status:'reset',resetAt:Date.now()};
+  if(bc) bc.postMessage({type:'state',payload:state});
+  if(FB) db('quiz').remove();
+  location.href=location.pathname+'#host';location.reload();
+};
+
+// ── EDITOR ───────────────────────────────────────────────────────
+window.openEditor=function(){renderEditor();document.getElementById('editorOverlay').style.display='flex';};
+window.closeEditor=function(){document.getElementById('editorOverlay').style.display='none';};
+window.closeEditorOutside=function(e){if(e.target===document.getElementById('editorOverlay'))closeEditor();};
+
+function readFileAsDataURL(file,cb){var r=new FileReader();r.onload=function(e){cb(e.target.result);};r.readAsDataURL(file);}
+
+function renderEditor(){
+  var list=document.getElementById('editorList');
+  list.innerHTML=questions.map(function(q,qi){
+    var opts=q.opts.map(function(opt,oi){
+      return '<div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.4rem">'
+        +'<label style="font-weight:700;min-width:36px;color:'+(oi===q.correct?'var(--amber)':'var(--muted)')+';display:flex;align-items:center;gap:3px;cursor:pointer">'
+        +'<input type="radio" name="cor_'+qi+'" value="'+oi+'" '+(oi===q.correct?'checked':'')+'>'+LETTERS[oi]+'</label>'
+        +'<input class="inp" id="eo_'+qi+'_'+oi+'" value="'+esc(opt)+'" placeholder="Вариант '+LETTERS[oi]+'" style="flex:1;padding:.4rem .6rem;font-size:.88rem"></div>';
+    }).join('');
+    var imgPre=q.img?'<div style="margin-top:.4rem;text-align:center"><img src="'+esc(q.img)+'" style="max-height:80px;max-width:100%;border-radius:8px;border:1px solid var(--border)" onerror="this.style.display=\"none\""></div>':'';
+    return '<div style="border:1px solid var(--border);border-top:3px solid var(--amber);border-radius:var(--r-lg);padding:1rem;margin-bottom:1rem">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem">'
+      +'<strong style="color:var(--navy)">Вопрос '+(qi+1)+'</strong>'
+      +'<button class="btn btn-sm btn-ghost" onclick="removeQ('+qi+')" style="color:var(--err)">✕</button></div>'
+      +'<div style="margin-bottom:.6rem"><label class="lbl" style="font-size:.8rem">Текст</label>'
+      +'<textarea class="inp" id="eq_'+qi+'" rows="2">'+esc(q.q)+'</textarea></div>'
+      +'<div style="margin-bottom:.75rem"><label class="lbl" style="font-size:.8rem">🖼 Картинка</label>'
+      +'<div style="display:flex;gap:.4rem;margin-bottom:.4rem">'
+      +'<button type="button" class="btn btn-sm btn-outline" onclick="triggerFile('+qi+')"><i data-lucide="upload" style="width:12px;height:12px"></i> Файл</button>'
+      +'<button type="button" class="btn btn-sm btn-ghost" onclick="clearImg('+qi+')" style="color:var(--err)">✕</button></div>'
+      +'<input type="file" id="ef_'+qi+'" accept="image/*" style="display:none" onchange="handleFile('+qi+',this)">'
+      +'<input class="inp" id="ei_'+qi+'" type="url" placeholder="— или URL картинки —" value="'+esc(q.img||'')+'" style="font-size:.85rem;padding:.4rem .6rem">'
+      +'<div id="ep_'+qi+'">'+imgPre+'</div></div>'
+      +opts
+      +'<div style="display:flex;gap:.5rem;margin-top:.5rem">'
+      +'<button class="btn btn-sm btn-ghost" onclick="addOpt('+qi+')"'+(q.opts.length>=8?' disabled':'')+'>+ Вариант</button>'
+      +'<button class="btn btn-sm btn-ghost" onclick="delOpt('+qi+')"'+(q.opts.length<=2?' disabled':'')+'>− Вариант</button>'
+      +'</div></div>';
+  }).join('');
+  questions.forEach(function(_,qi){
+    var inp=document.getElementById('ei_'+qi);
+    if(inp) inp.oninput=function(){updImgPre(qi,inp.value.trim());};
+  });
+  lucide.createIcons();
+}
+
+window.triggerFile=function(qi){var e=document.getElementById('ef_'+qi);if(e)e.click();};
+window.handleFile=function(qi,inp){
+  if(!inp.files||!inp.files[0]) return;
+  var f=inp.files[0];
+  if(f.size>4*1024*1024){showToast('Файл > 4 МБ');return;}
+  readFileAsDataURL(f,function(d){questions[qi]._imgData=d;updImgPre(qi,d);document.getElementById('ei_'+qi).value='[local]';});
+};
+window.clearImg=function(qi){document.getElementById('ei_'+qi).value='';questions[qi]._imgData=null;updImgPre(qi,'');};
+function updImgPre(qi,src){var el=document.getElementById('ep_'+qi);if(!el) return;
+  el.innerHTML=src?'<div style="margin-top:.4rem;text-align:center"><img src="'+esc(src)+'" style="max-height:80px;max-width:100%;border-radius:8px;border:1px solid var(--border)" onerror="this.style.display=\"none\""></div>':'';}
+
+window.addQ=function(){questions.push({q:'Новый вопрос',img:'',opts:['Вариант А','Вариант Б','Вариант В','Вариант Г'],correct:0});renderEditor();};
+window.addQuestion=window.addQ;
+window.removeQ=function(qi){if(questions.length<=1){showToast('Нужен хотя бы 1 вопрос');return;}if(!confirm('Удалить вопрос '+(qi+1)+'?'))return;questions.splice(qi,1);renderEditor();};
+window.addOpt=function(qi){if(questions[qi].opts.length>=8)return;questions[qi].opts.push('Новый вариант');renderEditor();};
+window.delOpt=function(qi){if(questions[qi].opts.length<=2)return;if(questions[qi].correct>=questions[qi].opts.length-1)questions[qi].correct--;questions[qi].opts.pop();renderEditor();};
+
+window.saveQuestions=function(){
+  var upd=questions.map(function(q,qi){
+    var txt=document.getElementById('eq_'+qi).value.trim()||q.q;
+    var url=document.getElementById('ei_'+qi).value.trim();
+    var img=(url==='[local]'&&q._imgData)?q._imgData:(url&&url!=='[local]'?url:(q.img||''));
+    var opts=q.opts.map(function(_,oi){return document.getElementById('eo_'+qi+'_'+oi).value.trim()||LETTERS[oi];});
+    var cor=q.correct;
+    for(var oi=0;oi<opts.length;oi++){var r=document.querySelector('input[name="cor_'+qi+'"][value="'+oi+'"]');if(r&&r.checked){cor=oi;break;}}
+    return{q:txt,img:img,opts:opts,correct:cor};
+  });
+  questions=upd;
+  localStorage.setItem('lq_questions',JSON.stringify(questions));
+  if(FB){
+    var fbQ=upd.map(function(q){return Object.assign({},q,{img:q.img && !q.img.startsWith('data:') ? q.img : ''});});
+    db('quiz/questions').set(fbQ);
+  }
+  closeEditor();renderHostQList();
+  document.getElementById('hQCount').textContent=questions.length;
+  showToast('✅ Вопросы сохранены');
+  var st=getState();
+  if(st && st.status==='open') localStorage.setItem('lq_questions',JSON.stringify(questions));
+};
+
+// ── UTILS// ── UTILS ────────────────────────────────────────────────────────
+function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+function showToast(msg){
+  var t=document.getElementById('_t');
+  if(!t){t=document.createElement('div');t.id='_t';
+    t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;border-radius:999px;padding:9px 22px;box-shadow:var(--sh-md);font-size:.9rem;font-weight:600;z-index:9999;transition:opacity .3s;pointer-events:none';
+    document.body.appendChild(t);}
+  t.textContent=msg;t.style.opacity='1';
+  clearTimeout(t._ti);t._ti=setTimeout(function(){t.style.opacity='0';},2500);
+}
+</script>
+</body>
+</html>
