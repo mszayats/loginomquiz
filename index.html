@@ -4,9 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Loginom Quiz</title>
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
 <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
 <style>
 :root,[data-theme="light"]{
@@ -530,18 +527,37 @@ var timerLeft=TIMER,timerInt=null;
 var gamePhase='idle'; // idle | lobby | playing | finished
 
 var DEFAULT_Q=[
-  {q:"Что такое Loginom?",img:"",opts:["ERP-система для бухгалтерии","Платформа для анализа данных и машинного обучения","Система управления проектами","Инструмент для создания сайтов"],correct:1},
-  {q:"Как называется визуальный элемент рабочего процесса в Loginom?",img:"",opts:["Блок","Нода","Компонент","Модуль"],correct:0},
-  {q:"Какой узел используется для объединения двух таблиц по ключевому полю?",img:"",opts:["Фильтр","Соединение","Агрегация","Транспонирование"],correct:1},
-  {q:"Что позволяет делать узел «Замена» в Loginom?",img:"",opts:["Удалять дубликаты","Подставлять значения по справочнику","Сортировать данные","Объединять столбцы"],correct:1},
-  {q:"Какой формат файла НЕ поддерживается Loginom как источник данных?",img:"",opts:["CSV","Excel (.xlsx)","PDF","JSON"],correct:2},
-  {q:"Что такое «Пакет» в Loginom?",img:"",opts:["Набор лицензий","Файл с сохранённым сценарием аналитики","Модуль машинного обучения","Вид визуализации данных"],correct:1},
-  {q:"Для чего используется узел «Скользящее окно» в Loginom?",img:"",opts:["Для группировки записей","Для расчёта показателей в динамике","Для фильтрации временного диапазона","Для объединения таблиц"],correct:1},
-  {q:"Какой метод машинного обучения встроен в Loginom для классификации?",img:"",opts:["Линейная регрессия","Нейронная сеть","Решающее дерево","Все перечисленные"],correct:3},
-  {q:"Что означает аббревиатура ETL в контексте Loginom?",img:"",opts:["Efficient Table Language","Extract, Transform, Load","Enterprise Tool for Loginom","Embedded Table Logic"],correct:1},
-  {q:"Как в Loginom называется режим запуска сценария без GUI?",img:"",opts:["Batch-режим","Server-режим","Script-режим","Daemon-режим"],correct:0}
+  {q:"Что такое Loginom?",img:"",opts:["ERP-система для бухгалтерии","Платформа для анализа данных и машинного обучения","Система управления проектами","Инструмент для создания сайтов"],correct:1,imgPos:"top"},
+  {q:"Как называется визуальный элемент рабочего процесса в Loginom?",img:"",opts:["Блок","Нода","Компонент","Модуль"],correct:0,imgPos:"top"},
+  {q:"Какой узел используется для объединения двух таблиц по ключевому полю?",img:"",opts:["Фильтр","Соединение","Агрегация","Транспонирование"],correct:1,imgPos:"top"},
+  {q:"Что позволяет делать узел «Замена» в Loginom?",img:"",opts:["Удалять дубликаты","Подставлять значения по справочнику","Сортировать данные","Объединять столбцы"],correct:1,imgPos:"top"},
+  {q:"Какой формат файла НЕ поддерживается Loginom как источник данных?",img:"",opts:["CSV","Excel (.xlsx)","PDF","JSON"],correct:2,imgPos:"top"},
+  {q:"Что такое «Пакет» в Loginom?",img:"",opts:["Набор лицензий","Файл с сохранённым сценарием аналитики","Модуль машинного обучения","Вид визуализации данных"],correct:1,imgPos:"top"},
+  {q:"Для чего используется узел «Скользящее окно» в Loginom?",img:"",opts:["Для группировки записей","Для расчёта показателей в динамике","Для фильтрации временного диапазона","Для объединения таблиц"],correct:1,imgPos:"top"},
+  {q:"Какой метод машинного обучения встроен в Loginom для классификации?",img:"",opts:["Линейная регрессия","Нейронная сеть","Решающее дерево","Все перечисленные"],correct:3,imgPos:"top"},
+  {q:"Что означает аббревиатура ETL в контексте Loginom?",img:"",opts:["Efficient Table Language","Extract, Transform, Load","Enterprise Tool for Loginom","Embedded Table Logic"],correct:1,imgPos:"top"},
+  {q:"Как в Loginom называется режим запуска сценария без GUI?",img:"",opts:["Batch-режим","Server-режим","Script-режим","Daemon-режим"],correct:0,imgPos:"top"}
 ];
 var questions=JSON.parse(localStorage.getItem('lq_questions')||'null')||DEFAULT_Q.map(function(q){return Object.assign({},q);});
+
+// ── State / Session helpers (added — these were missing, causing crashes) ──
+function getState(){try{return JSON.parse(localStorage.getItem('lq_state')||'null');}catch(e){return null;}}
+function getParticipants(){try{return JSON.parse(localStorage.getItem('lq_participants')||'{}');}catch(e){return {};}}
+function getSessionId(){return localStorage.getItem('lq_sessionId')||'';}
+function setSessionId(id){localStorage.setItem('lq_sessionId',id);}
+function clearSessionPlayers(){localStorage.setItem('lq_participants','{}');}
+function loadQuestionsFromFirebase(cb){
+  if(FB){
+    try{
+      db('quiz/questions').get().then(function(snap){
+        var v=snap.val();
+        if(v&&Array.isArray(v)&&v.length){questions=v;localStorage.setItem('lq_questions',JSON.stringify(v));}
+        cb&&cb();
+      }).catch(function(e){console.warn('FB questions load failed',e);cb&&cb();});
+    }catch(e){console.warn('FB error',e);cb&&cb();}
+  } else { cb&&cb(); }
+}
+
 
 // ── Screens ──────────────────────────────────────────────────────
 function show(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});document.getElementById(id).classList.add('active');}
@@ -732,7 +748,7 @@ window.hostFinishGame=function(){
   updateHostGamePanel(state);showToast('Игра завершена. Вопросы сохранены.');
 };
 
-function renderHostQList(){function renderHostQList(){
+function renderHostQList(){
   var el=document.getElementById('hostQList');if(!el) return;
   el.innerHTML=questions.map(function(q,i){
     return '<div class="qi"><div class="qi-n">'+(i+1)+'</div><div class="qi-t">'+esc(q.q)
@@ -768,9 +784,13 @@ function showQuestion(idx){
   document.getElementById('resBanner').style.display='none';
   document.getElementById('submitWrap').style.display='none';
 
-  var iw=document.getElementById('qImgWrap'),im=document.getElementById('qImg');
-  if(q.img&&q.img.trim()){im.src=q.img.trim();iw.style.display='block';}
-  else{iw.style.display='none';im.src='';}
+  var iw=document.getElementById('qImgWrap'),im=document.getElementById('qImg'),qt=document.getElementById('qText');
+  if(q.img&&q.img.trim()){
+    im.src=q.img.trim();iw.style.display='block';
+    var pos=q.imgPos==='bottom'?'bottom':'top';
+    if(pos==='top') qt.parentNode.insertBefore(iw,qt);
+    else qt.parentNode.insertBefore(iw,qt.nextSibling);
+  } else { iw.style.display='none';im.src=''; }
 
   var grid=document.getElementById('ansGrid');grid.innerHTML='';
   q.opts.forEach(function(opt,i){
@@ -936,6 +956,10 @@ function renderEditor(){
       +'<button type="button" class="btn btn-sm btn-ghost" onclick="clearImg('+qi+')" style="color:var(--err)">✕</button></div>'
       +'<input type="file" id="ef_'+qi+'" accept="image/*" style="display:none" onchange="handleFile('+qi+',this)">'
       +'<input class="inp" id="ei_'+qi+'" type="url" placeholder="— или URL картинки —" value="'+esc(q.img||'')+'" style="font-size:.85rem;padding:.4rem .6rem">'
+      +'<div style="display:flex;gap:1rem;margin-top:.5rem;font-size:.85rem">'
+      +'<label style="display:flex;align-items:center;gap:.3rem;cursor:pointer"><input type="radio" name="pos_'+qi+'" value="top" '+((q.imgPos||'top')==='top'?'checked':'')+'> Сверху текста</label>'
+      +'<label style="display:flex;align-items:center;gap:.3rem;cursor:pointer"><input type="radio" name="pos_'+qi+'" value="bottom" '+((q.imgPos||'top')==='bottom'?'checked':'')+'> Снизу текста</label>'
+      +'</div>'
       +'<div id="ep_'+qi+'">'+imgPre+'</div></div>'
       +opts
       +'<div style="display:flex;gap:.5rem;margin-top:.5rem">'
@@ -961,7 +985,7 @@ window.clearImg=function(qi){document.getElementById('ei_'+qi).value='';question
 function updImgPre(qi,src){var el=document.getElementById('ep_'+qi);if(!el) return;
   el.innerHTML=src?'<div style="margin-top:.4rem;text-align:center"><img src="'+esc(src)+'" style="max-height:80px;max-width:100%;border-radius:8px;border:1px solid var(--border)" onerror="this.style.display=\"none\""></div>':'';}
 
-window.addQ=function(){questions.push({q:'Новый вопрос',img:'',opts:['Вариант А','Вариант Б','Вариант В','Вариант Г'],correct:0});renderEditor();};
+window.addQ=function(){questions.push({q:'Новый вопрос',img:'',imgPos:'top',opts:['Вариант А','Вариант Б','Вариант В','Вариант Г'],correct:0});renderEditor();};
 window.addQuestion=window.addQ;
 window.removeQ=function(qi){if(questions.length<=1){showToast('Нужен хотя бы 1 вопрос');return;}if(!confirm('Удалить вопрос '+(qi+1)+'?'))return;questions.splice(qi,1);renderEditor();};
 window.addOpt=function(qi){if(questions[qi].opts.length>=8)return;questions[qi].opts.push('Новый вариант');renderEditor();};
@@ -975,7 +999,9 @@ window.saveQuestions=function(){
     var opts=q.opts.map(function(_,oi){return document.getElementById('eo_'+qi+'_'+oi).value.trim()||LETTERS[oi];});
     var cor=q.correct;
     for(var oi=0;oi<opts.length;oi++){var r=document.querySelector('input[name="cor_'+qi+'"][value="'+oi+'"]');if(r&&r.checked){cor=oi;break;}}
-    return{q:txt,img:img,opts:opts,correct:cor};
+    var pos=q.imgPos||'top';
+    var pr=document.querySelector('input[name="pos_'+qi+'"]:checked');if(pr) pos=pr.value;
+    return{q:txt,img:img,imgPos:pos,opts:opts,correct:cor};
   });
   questions=upd;
   localStorage.setItem('lq_questions',JSON.stringify(questions));
